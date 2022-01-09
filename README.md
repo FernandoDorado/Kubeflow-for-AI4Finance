@@ -112,7 +112,7 @@ Let's see how we can import this pipeline into Kubeflow:
 ![Select a pipeline](files/Screenshot_17.png)
 
 4. Start a experiment adding some arguments
-![Create an experiment](files/Screenshot_19.png)
+![Create an experiment](files/Screenshot_20.png)
 
 5. Go to the experiment and see the results
 ![Create an experiment](files/Screenshot_21.png)
