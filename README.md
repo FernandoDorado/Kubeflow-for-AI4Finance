@@ -81,6 +81,14 @@ mkdir -p ${KF_DIR}
 cd ${KF_DIR}
 kfctl apply -V -f ${CONFIG_URI}
 ```
+If some errors appears similar to *failed to apply: (kubeflow.error): Code 500 with message: kfApp Apply failed for kustomize: (kubeflow.error): Code 500 with message: Apply.Run Error error when creating "/tmp/kout202869655"* execute the following commands: 
+```bash
+wget https://raw.githubusercontent.com/kubeflow/manifests/v1.0-branch/kfdef/kfctl_k8s_istio.v1.0.0.yaml
+kfctl apply -V -f ./kfctl_k8s_istio.v1.0.0.yaml
+```
+
+
+
 
 Lets see where our Kubeflow dashboard is:
 ```bash
