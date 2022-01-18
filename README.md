@@ -88,8 +88,6 @@ kfctl apply -V -f ./kfctl_k8s_istio.v1.0.0.yaml
 ```
 
 
-
-
 Lets see where our Kubeflow dashboard is:
 ```bash
 echo "http://localhost:$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')"
