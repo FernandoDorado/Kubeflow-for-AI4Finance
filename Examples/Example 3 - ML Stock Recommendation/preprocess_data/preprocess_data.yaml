@@ -1,0 +1,14 @@
+name: Load data function 
+description: Load data from input path and store it in the output path
+
+outputs:
+- {name: Data, type: LocalPath, description: 'Path where data will be stored.'}
+
+implementation:
+  container:
+    image: fernandodorado/example-mlops-pipeline:preprocess_data
+    command: [
+      python, preprocess_data.py,
+      --outputpath,
+      {outputPath: Data},
+    ]

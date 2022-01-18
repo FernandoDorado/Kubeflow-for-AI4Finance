@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.10, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-16T17:26:59.405876',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.10, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T21:10:42.027111',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Example Pipeline", "name":
       "Pipeline"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.10}
@@ -12,12 +12,9 @@ spec:
   - name: load-data-function
     container:
       args: []
-      command: [python, load_data.py, --data, /tmp/outputs/Data/data]
-      image: fernandodorado/example-mlops-pipeline:load_data
+      command: [python, preprocess_data.py, --outputpath, /tmp/outputs/Data/data]
+      image: fernandodorado/example-mlops-pipeline:preprocess_data
     outputs:
-      parameters:
-      - name: load-data-function-Data
-        valueFrom: {path: /tmp/outputs/Data/data}
       artifacts:
       - {name: load-data-function-Data, path: /tmp/outputs/Data/data}
     metadata:
@@ -27,61 +24,16 @@ spec:
         pipelines.kubeflow.org/enable_caching: "true"
       annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Load
           data from input path and store it in the output path", "implementation":
-          {"container": {"command": ["python", "load_data.py", "--data", {"outputPath":
-          "Data"}], "image": "fernandodorado/example-mlops-pipeline:load_data"}},
+          {"container": {"command": ["python", "preprocess_data.py", "--outputpath",
+          {"outputPath": "Data"}], "image": "fernandodorado/example-mlops-pipeline:preprocess_data"}},
           "name": "Load data function", "outputs": [{"description": "Path where data
           will be stored.", "name": "Data", "type": "LocalPath"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
-          "5d7da1b1a975a9bb009b3434876b196f70ef102beed62c6c18e0be6bcd097a79", "url":
-          "load_data/load_data.yaml"}'}
+          "64b617ddd4a5836c0e14e4ad97e9b543c19116116465ba6d2da3f4c01be5b899", "url":
+          "preprocess_data/preprocess_data.yaml"}'}
   - name: pipeline
     dag:
       tasks:
       - {name: load-data-function, template: load-data-function}
-      - name: show-csv
-        template: show-csv
-        dependencies: [load-data-function]
-        arguments:
-          parameters:
-          - {name: load-data-function-Data, value: '{{tasks.load-data-function.outputs.parameters.load-data-function-Data}}'}
-  - name: show-csv
-    container:
-      args: [--csv-file, '{{inputs.parameters.load-data-function-Data}}']
-      command:
-      - sh
-      - -ec
-      - |
-        program_path=$(mktemp)
-        printf "%s" "$0" > "$program_path"
-        python3 -u "$program_path" "$@"
-      - |
-        def show_csv(csv_file):
-            print(f"CSV {csv_file}")
-
-        import argparse
-        _parser = argparse.ArgumentParser(prog='Show csv', description='')
-        _parser.add_argument("--csv-file", dest="csv_file", type=str, required=True, default=argparse.SUPPRESS)
-        _parsed_args = vars(_parser.parse_args())
-
-        _outputs = show_csv(**_parsed_args)
-      image: python:3.7
-    inputs:
-      parameters:
-      - {name: load-data-function-Data}
-    metadata:
-      labels:
-        pipelines.kubeflow.org/kfp_sdk_version: 1.8.10
-        pipelines.kubeflow.org/pipeline-sdk-type: kfp
-        pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
-          {"args": ["--csv-file", {"inputValue": "csv_file"}], "command": ["sh", "-ec",
-          "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3
-          -u \"$program_path\" \"$@\"\n", "def show_csv(csv_file):\n    print(f\"CSV
-          {csv_file}\")\n\nimport argparse\n_parser = argparse.ArgumentParser(prog=''Show
-          csv'', description='''')\n_parser.add_argument(\"--csv-file\", dest=\"csv_file\",
-          type=str, required=True, default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\n_outputs
-          = show_csv(**_parsed_args)\n"], "image": "python:3.7"}}, "inputs": [{"name":
-          "csv_file"}], "name": "Show csv"}', pipelines.kubeflow.org/component_ref: '{}',
-        pipelines.kubeflow.org/arguments.parameters: '{"csv_file": "{{inputs.parameters.load-data-function-Data}}"}'}
   arguments:
     parameters: []
   serviceAccountName: pipeline-runner
