@@ -16,7 +16,16 @@ def first_pipeline():
 
 
     # Run download_data task
-    preprocess_data_task = preprocess_data()
+    preprocess_data_task = preprocess_data(sector_name_input='sector10',
+                                           fundamental_input='data/fundamental_final_table.xlsx',
+                                           sector_input='data/1-focasting_data/sector10_clean.xlsx',
+                                           first_trade_index=20,
+                                           testing_window=4,
+                                           label_column='y_return',
+                                           date_column='tradedate',
+                                           tic_column='tic',
+                                           no_feature_column_names=['gvkey', 'tic', 'datadate', 'rdq', 'tradedate', 'fyearq', 'fqtr','conm', 'datacqtr', 'datafqtr', 'gsector','y_return'],
+                                           outputpath='output')
 
     # Given the outputs from "decision_tree" and "logistic_regression"
     # the component "show_results" is called to print the results.

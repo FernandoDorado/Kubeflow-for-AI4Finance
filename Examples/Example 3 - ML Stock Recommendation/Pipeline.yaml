@@ -2,38 +2,76 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: pipeline-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.10, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T21:10:42.027111',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.10, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-22T19:24:29.926769',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Example Pipeline", "name":
       "Pipeline"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.10}
 spec:
   entrypoint: pipeline
   templates:
-  - name: load-data-function
+  - name: pipeline
+    dag:
+      tasks:
+      - {name: preprocess-data-function, template: preprocess-data-function}
+  - name: preprocess-data-function
     container:
       args: []
-      command: [python, preprocess_data.py, --outputpath, /tmp/outputs/Data/data]
+      command: [python, preprocess_data.py, -fundamental, data/fundamental_final_table.xlsx,
+        -sector, data/1-focasting_data/sector10_clean.xlsx, -sector_name, sector10,
+        -outputpath, output]
       image: fernandodorado/example-mlops-pipeline:preprocess_data
+    inputs:
+      artifacts:
+      - name: date_column
+        path: /tmp/inputs/date_column/data
+        raw: {data: tradedate}
+      - name: first_trade_index
+        path: /tmp/inputs/first_trade_index/data
+        raw: {data: '20'}
+      - name: label_column
+        path: /tmp/inputs/label_column/data
+        raw: {data: y_return}
+      - name: no_feature_column_names
+        path: /tmp/inputs/no_feature_column_names/data
+        raw: {data: '[''gvkey'', ''tic'', ''datadate'', ''rdq'', ''tradedate'', ''fyearq'',
+            ''fqtr'', ''conm'', ''datacqtr'', ''datafqtr'', ''gsector'', ''y_return'']'}
+      - name: testing_window
+        path: /tmp/inputs/testing_window/data
+        raw: {data: '4'}
+      - name: tic_column
+        path: /tmp/inputs/tic_column/data
+        raw: {data: tic}
     outputs:
       artifacts:
-      - {name: load-data-function-Data, path: /tmp/outputs/Data/data}
+      - {name: preprocess-data-function-outputpath, path: /tmp/output}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.10
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
       annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Load
-          data from input path and store it in the output path", "implementation":
-          {"container": {"command": ["python", "preprocess_data.py", "--outputpath",
-          {"outputPath": "Data"}], "image": "fernandodorado/example-mlops-pipeline:preprocess_data"}},
-          "name": "Load data function", "outputs": [{"description": "Path where data
-          will be stored.", "name": "Data", "type": "LocalPath"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
-          "64b617ddd4a5836c0e14e4ad97e9b543c19116116465ba6d2da3f4c01be5b899", "url":
-          "preprocess_data/preprocess_data.yaml"}'}
-  - name: pipeline
-    dag:
-      tasks:
-      - {name: load-data-function, template: load-data-function}
+          data from input path, pre-process it and store it in the output path", "implementation":
+          {"container": {"command": ["python", "preprocess_data.py", "-fundamental",
+          {"inputValue": "fundamental_input"}, "-sector", {"inputValue": "sector_input"},
+          "-sector_name", {"inputValue": "sector_name_input"}, "-outputpath", {"inputValue":
+          "outputpath"}], "fileOutputs": {"outputpath": "/tmp/output"}, "image": "fernandodorado/example-mlops-pipeline:preprocess_data"}},
+          "inputs": [{"description": "sector name: i.e. sector10", "name": "sector_name_input",
+          "type": "String"}, {"description": "inputfile name for fundamental table",
+          "name": "fundamental_input", "type": "String"}, {"description": "inputfile
+          name for individual sector", "name": "sector_input", "type": "String"},
+          {"description": "", "name": "first_trade_index", "type": "Int"}, {"description":
+          "", "name": "testing_window", "type": "Int"}, {"description": "", "name":
+          "label_column", "type": "String"}, {"description": "", "name": "date_column",
+          "type": "String"}, {"description": "", "name": "tic_column", "type": "String"},
+          {"description": "no_feature_column_names", "name": "no_feature_column_names",
+          "type": "List"}, {"description": "Path where data will be stored.", "name":
+          "outputpath", "type": "String"}], "name": "Preprocess Data Function", "outputs":
+          [{"description": "Path where data will be stored.", "name": "outputpath",
+          "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "2fb3f3472b70019fd4ec440522b26c9a1aebb6e81b24c24156f88ae371fe9349", "url":
+          "preprocess_data/preprocess_data.yaml"}', pipelines.kubeflow.org/arguments.parameters: '{"fundamental_input":
+          "data/fundamental_final_table.xlsx", "outputpath": "output", "sector_input":
+          "data/1-focasting_data/sector10_clean.xlsx", "sector_name_input": "sector10"}'}
   arguments:
     parameters: []
   serviceAccountName: pipeline-runner

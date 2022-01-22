@@ -1,14 +1,31 @@
-name: Load data function 
-description: Load data from input path and store it in the output path
+name: Preprocess Data Function
+description: Load data from input path, pre-process it and store it in the output path
+
+
+inputs: 
+  - {name: sector_name_input, description: 'sector name: i.e. sector10', type: String}
+  - {name: fundamental_input, description: 'inputfile name for fundamental table', type: String}
+  - {name: sector_input, description: 'inputfile name for individual sector', type: String}
+  - {name: first_trade_index, description: '', type: Int}
+  - {name: testing_window, description: '', type: Int}
+  - {name: label_column, description: '', type: String}
+  - {name: date_column, description: '', type: String}
+  - {name: tic_column, description: '', type: String}
+  - {name: no_feature_column_names, description: 'no_feature_column_names', type: List}
+  - {name: outputpath, type: String, description: 'Path where data will be stored.'}
 
 outputs:
-- {name: Data, type: LocalPath, description: 'Path where data will be stored.'}
+- {name: outputpath, type: String, description: 'Path where data will be stored.'}
 
 implementation:
   container:
     image: fernandodorado/example-mlops-pipeline:preprocess_data
     command: [
       python, preprocess_data.py,
-      --outputpath,
-      {outputPath: Data},
+      -fundamental, {inputValue: fundamental_input},
+      -sector, {inputValue: sector_input},
+      -sector_name, {inputValue: sector_name_input},
+      -outputpath, {inputValue: outputpath},
     ]
+    fileOutputs:
+      outputpath: /tmp/output
